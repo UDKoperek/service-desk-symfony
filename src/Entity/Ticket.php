@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\TicketRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -26,6 +28,31 @@ class Ticket
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $priority = null;
 
+    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'tickets')]
+    #[ORM\JoinColumn(nullable: false)] // Cant be NULL
+    private ?Category $category = null;
+
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'ticket', orphanRemoval: true)]
+    private Collection $comments;
+
+    public function __construct()
+    {
+        $this->comments = new ArrayCollection();
+    }
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): self
+    {
+        $this->category = $category;
+        return $this;
+    }
     public function getId(): ?int
     {
         return $this->id;
@@ -75,6 +102,36 @@ class Ticket
     public function setPriority(?string $priority): static
     {
         $this->priority = $priority;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setTicket($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getTicket() === $this) {
+                $comment->setTicket(null);
+            }
+        }
 
         return $this;
     }

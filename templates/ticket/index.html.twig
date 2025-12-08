@@ -14,6 +14,7 @@
                 <th>Status</th>
                 <th>Priority</th>
                 <th>actions</th>
+                <th>Category</th>
             </tr>
         </thead>
         <tbody>
@@ -28,6 +29,7 @@
                     <a href="{{ path('app_ticket_show', {'id': ticket.id}) }}">show</a>
                     <a href="{{ path('app_ticket_edit', {'id': ticket.id}) }}">edit</a>
                 </td>
+                <td> {{ticket.Category ? ticket.Category.name : Brak}} </td>
             </tr>
         {% else %}
             <tr>
