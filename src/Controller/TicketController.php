@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Ticket;
 use App\Form\TicketType;
 use App\Repository\TicketRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,6 +44,7 @@ final class TicketController extends AbstractController
     #[Route('/{id}', name: 'app_ticket_show', methods: ['GET'])]
     public function show(Ticket $ticket): Response
     {
+        $this->denyAccessUnlessGranted('SHOW', $ticket);
         return $this->render('ticket/show.html.twig', [
             'ticket' => $ticket,
         ]);
@@ -53,6 +53,7 @@ final class TicketController extends AbstractController
     #[Route('/{id}/edit', name: 'app_ticket_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Ticket $ticket, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted('EDIT', $ticket);
         $form = $this->createForm(TicketType::class, $ticket);
         $form->handleRequest($request);
 
@@ -71,6 +72,7 @@ final class TicketController extends AbstractController
     #[Route('/{id}', name: 'app_ticket_delete', methods: ['POST'])]
     public function delete(Request $request, Ticket $ticket, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted('DELETE', $ticket);
         if ($this->isCsrfTokenValid('delete'.$ticket->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($ticket);
             $entityManager->flush();

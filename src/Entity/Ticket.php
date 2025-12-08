@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\TicketRepository;
+use App\Enum\TicketStatus;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -37,6 +38,9 @@ class Ticket
      */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'ticket', orphanRemoval: true)]
     private Collection $comments;
+
+    #[ORM\Column(type: 'string', enumType: TicketStatus::class)]
+    private TicketStatus $status = TicketStatus::NEW;
 
     public function __construct()
     {
@@ -133,6 +137,17 @@ class Ticket
             }
         }
 
+        return $this;
+    }
+
+    public function getStatus(): TicketStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(TicketStatus $status): self
+    {
+        $this->status = $status;
         return $this;
     }
 }
