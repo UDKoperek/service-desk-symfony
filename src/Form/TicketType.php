@@ -3,6 +3,8 @@
 namespace App\Form;
 
 use App\Entity\Ticket;
+use App\Enum\TicketStatus;
+use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -16,14 +18,17 @@ class TicketType extends AbstractType
         $builder
             ->add('title')
             ->add('content')
-            ->add('status')
+            ->add('status', EnumType::class, [
+            'class' => TicketStatus::class,
+            'choice_label' => fn (TicketStatus $choice) => $choice->value,
+            'placeholder' => 'Wybierz status',
+            ])
             ->add('priority')
             ->add('category', EntityType::class, [
                 'class' => Category::class,
-                'choice_label' => 'name',  // <--- Tutaj wpisz nazwę pola z Kategorii (np. 'name', 'title' lub 'nazwa')
-                'placeholder' => 'Wybierz kategorię', // Opcjonalnie: pusty wybór na początku
+                'choice_label' => 'name',
+                'placeholder' => 'Wybierz kategorię', 
             ])
-            // -----------------------------------------------------
         ;
 }
 

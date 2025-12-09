@@ -23,7 +23,7 @@
                 <td>{{ ticket.id }}</td>
                 <td>{{ ticket.title }}</td>
                 <td>{{ ticket.content }}</td>
-                <td>{{ ticket.status }}</td>
+                <td>{{ ticket.status.value }}</td>
                 <td>{{ ticket.priority }}</td>
                 <td>
                     <a href="{{ path('app_ticket_show', {'id': ticket.id}) }}">show</a>

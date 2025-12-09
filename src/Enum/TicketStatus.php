@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum TicketStatus:
+enum TicketStatus: string
 {
     case NEW = 'New';
     case IN_PROGRESS = 'In Progress';
