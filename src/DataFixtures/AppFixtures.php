@@ -44,9 +44,9 @@ class AppFixtures extends Fixture
         $anonymousUser->setUsername(self::ANONYMOUS_USERNAME);
         $anonymousUser->setEmail(self::ANONYMOUS_USERNAME . '@example.com');
 
-        $anonymousUser->setPassword($this->passwordHasher->hashPassword($anonymousUser, ''));
+        $anonymousUser->setPassword($this->passwordHasher->hashPassword($anonymousUser, 'random_secure_string'));
 
-        $anonymousUser->setRoles(['ROLE_ANONYMOUS_USERNAME']);
+        $anonymousUser->setRoles(['ROLE_ANONYMOUS_SUBMITTER']);
 
         $existingUser = $manager->getRepository(User::class)->findOneBy(['username' => self::ANONYMOUS_USERNAME]);
         if (!$existingUser) {

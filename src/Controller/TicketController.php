@@ -7,6 +7,7 @@ use App\Entity\Ticket;
 use App\Form\TicketType;
 use App\Repository\TicketRepository; 
 use App\Service\TicketService;
+use App\Service\AnonymousTokenService;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,30 +21,31 @@ final class TicketController extends AbstractController
     public function __construct(
         private readonly Security $security,
         private readonly TicketService $TicketService,
-        private readonly RequestStack $requestStack
+        private readonly AnonymousTokenService $tokenService,
+        private readonly TicketRepository $ticketRepository,
     ) {
     }
 
     #[Route(name: 'app_ticket_index', methods: ['GET'])]
-    public function index(TicketRepository $ticketRepository): Response
+    public function index(): Response
     {
         $user = $this->security->getUser();
         $authorId = null;
         $sessionToken = null;
 
-        if ($user instanceof \App\Entity\User) {
+        if ($user) {
             $authorId = $user->getId();
         } 
         // 2. Sprawdzenie, czy użytkownik jest ANONIMOWY (i czy ma aktywną sesję)
-        elseif ($this->requestStack->getSession()->isStarted()) {
-            $sessionToken = $this->requestStack->getSession()->getId();
+        elseif (!$user) {
+            $sessionToken = $this->tokenService->getOrCreateToken();
         }
 
         // Przekazanie kryteriów filtrowania do Repository
         $tickets = $this->ticketRepository->findTicketsForUser($authorId, $sessionToken);
-        
+
         return $this->render('ticket/index.html.twig', [
-            'tickets' => $ticketRepository->findAll(),
+            'tickets' => $tickets,
         ]);
     }
 

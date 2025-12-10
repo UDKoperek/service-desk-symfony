@@ -2,8 +2,9 @@
 
 namespace App\Service;
 
-use App\Entity\Ticket;
 use App\Entity\User;
+use App\Entity\Ticket;
+use App\Service\AnonymousTokenService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -15,8 +16,7 @@ final class TicketService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly Security $security,
-        private readonly RequestStack $requestStack,
-        private readonly AnonymousTokenService $tokenService,
+        private readonly AnonymousTokenService $anonymousTokenService,
     ) {
     }
 
@@ -39,8 +39,8 @@ final class TicketService
             $ticket->setAuthor($anonymousUser);
 
             // 2b. Przypisz unikalne ID sesji jako token zabezpieczający
-            $sessionId = $this->requestStack->getSession()->getId();
-            $ticket->setSessionToken($sessionId); 
+            $longTermToken = $this->anonymousTokenService->getOrCreateToken(); 
+            $ticket->setSessionToken($longTermToken);
         }
         
         $this->entityManager->persist($ticket);
