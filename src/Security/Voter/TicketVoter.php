@@ -4,16 +4,23 @@ namespace App\Security\Voter;
 
 use App\Entity\Ticket;
 use App\Entity\User;
+use App\Service\TicketService;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 final class TicketVoter extends Voter
 {
     public const SHOW = 'GET_SHOW';
     public const EDIT = 'POST_EDIT';
     public const DELETE = 'POST_DELETE';
+
+    public function __construct(
+        private readonly Security $security,
+        private readonly RequestStack $requestStack, // 🔑 Konieczna zależność!
+    ) {
+    }
 
     protected function supports(string $attribute, mixed $subject): bool
     {
@@ -23,75 +30,75 @@ final class TicketVoter extends Voter
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        $user = $token->getUser();
+        $user = $token->getUser(); // User entity, 'anon.' string, lub inny anonimowy obiekt
 
-        // if the user is anonymous, do not grant access
-        if (!$user instanceof UserInterface) {
-            return false;
-        }
         /** @var Ticket $ticket */
         $ticket = $subject; 
 
-        // ... (check conditions and return true to grant permission) ...
-        switch ($attribute) {
-            case self::SHOW:
-                return $this->canShow($ticket, $user); 
-                
-            case self::EDIT:
-                return $this->canEdit($ticket, $user);
-
-            case self::DELETE:
-                return $this->canDelete($ticket, $user);
-        }
-
-        return false;
-    }
-
-    private function canShow(Ticket $ticket, User $user): bool
-    {
-        // 1. ADMIN always granted
-        if ($this->security->isGranted('ROLE_ADMIN')) {
-            return true;
-        }
+        // 1. Sprawdzamy, czy token reprezentuje faktycznego, zalogowanego użytkownika (User Entity)
+        if ($user instanceof User) {
+            // Logika dla ZALOGOWANYCH: Przekazujemy User entity
+            return match ($attribute) {
+                self::SHOW => $this->canShowAuthenticated($ticket, $user), 
+                self::EDIT => $this->canEditAuthenticated($ticket, $user),
+                self::DELETE => $this->canDeleteAuthenticated($ticket, $user),
+                default => false,
+            };
+        } 
         
-        // 2. AGENT can show all tickets
-        if ($this->security->isGranted('ROLE_AGENT')) {
-            return true;
+        // 2. Jeśli NIE jest to User Entity, traktujemy jako ANONIMOWY dostęp
+        else {
+            // Logika dla ANONIMOWYCH: Nie przekazujemy obiektu User, używamy tylko tokena sesji
+            return match ($attribute) {
+                self::SHOW => $this->canShowAnonymous($ticket), 
+                self::EDIT => $this->canEditAnonymous($ticket),
+                // Anonimowy użytkownik nigdy nie może usuwać
+                self::DELETE => false,
+                default => false,
+            };
         }
-
-        // 3.Ticket's creator (ROLE_USER) can show only his ticket
-        // Check is user author of the ticket
-        if ($user === $ticket->getAuthor()) {
-            return true;
-        }
-
-        return false;
     }
 
-    private function canEdit(Ticket $ticket, User $user): bool
+    // --- LOGIKA DLA ZALOGOWANYCH UŻYTKOWNIKÓW (CZYSTY TYP User) ---
+    
+    private function canShowAuthenticated(Ticket $ticket, User $user): bool
     {
-        // 1. ADMIN always granted
-        if ($this->security->isGranted('ROLE_ADMIN')) {
+        // ... (Logika: ADMIN/AGENT lub właściciel) ...
+        if ($this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_AGENT')) {
             return true;
         }
-        
-        // 2. AGENT can edit all tickets
-        if ($this->security->isGranted('ROLE_AGENT')) {
-            return true;
-        }
-
-        // 3.Ticket's creator (ROLE_USER) can edit only his ticket
-        // Check is user author of the ticket
-        if ($user === $ticket->getAuthor()) {
-            return true;
-        }
-
-        return false;
+        $author = $ticket->getAuthor();
+        return ($author !== null && $user->getId() === $author->getId());
     }
 
-    private function canDelete(Ticket $ticket, User $user): bool
+    private function canEditAuthenticated(Ticket $ticket, User $user): bool
     {
-        // Tylko ADMINISTRATOR ma uprawnienia do usuwania zgłoszeń
+        // ... (Logika: ADMIN/AGENT lub właściciel) ...
+        if ($this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_AGENT')) {
+            return true;
+        }
+        $author = $ticket->getAuthor();
+        return ($author !== null && $user->getId() === $author->getId());
+    }
+
+    private function canDeleteAuthenticated(Ticket $ticket, User $user): bool
+    {
         return $this->security->isGranted('ROLE_ADMIN');
+    }
+    
+    // --- LOGIKA DLA ANONIMOWYCH UŻYTKOWNIKÓW (BRAK User) ---
+
+    private function canShowAnonymous(Ticket $ticket): bool
+    {
+        // Sprawdzenie uprawnień przez token sesji
+        $currentSessionId = $this->requestStack->getSession()->getId();
+        return ($ticket->getSessionToken() === $currentSessionId);
+    }
+
+    private function canEditAnonymous(Ticket $ticket): bool
+    {
+        // Sprawdzenie uprawnień przez token sesji
+        $currentSessionId = $this->requestStack->getSession()->getId();
+        return ($ticket->getSessionToken() === $currentSessionId);
     }
 }

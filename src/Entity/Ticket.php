@@ -17,6 +17,10 @@ class Ticket
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $author = null;
+
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
@@ -30,6 +34,9 @@ class Ticket
     #[ORM\JoinColumn(nullable: false)] // Cant be NULL
     private ?Category $category = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $sessionToken = null;
+
     /**
      * @var Collection<int, Comment>
      */
@@ -42,6 +49,18 @@ class Ticket
     public function __construct()
     {
         $this->comments = new ArrayCollection();
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?User $author): static
+    {
+        $this->author = $author;
+
+        return $this;
     }
 
     public function getCategory(): ?Category
@@ -133,6 +152,18 @@ class Ticket
     public function setStatus(TicketStatus $status): self
     {
         $this->status = $status;
+        return $this;
+    }
+
+    public function getSessionToken(): ?string
+    {
+        return $this->sessionToken;
+    }
+
+    public function setSessionToken(?string $sessionToken): static
+    {
+        $this->sessionToken = $sessionToken;
+
         return $this;
     }
 }

@@ -2,9 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Entity\Ticket;
 use App\Form\TicketType;
-use App\Repository\TicketRepository;
+use App\Repository\TicketRepository; 
+use App\Service\TicketService;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,25 +17,53 @@ use Doctrine\ORM\EntityManagerInterface;
 #[Route('/ticket')]
 final class TicketController extends AbstractController
 {
+    public function __construct(
+        private readonly Security $security,
+        private readonly TicketService $TicketService,
+        private readonly RequestStack $requestStack
+    ) {
+    }
+
     #[Route(name: 'app_ticket_index', methods: ['GET'])]
     public function index(TicketRepository $ticketRepository): Response
     {
+        $user = $this->security->getUser();
+        $authorId = null;
+        $sessionToken = null;
+
+        if ($user instanceof \App\Entity\User) {
+            $authorId = $user->getId();
+        } 
+        // 2. Sprawdzenie, czy użytkownik jest ANONIMOWY (i czy ma aktywną sesję)
+        elseif ($this->requestStack->getSession()->isStarted()) {
+            $sessionToken = $this->requestStack->getSession()->getId();
+        }
+
+        // Przekazanie kryteriów filtrowania do Repository
+        $tickets = $this->ticketRepository->findTicketsForUser($authorId, $sessionToken);
+        
         return $this->render('ticket/index.html.twig', [
             'tickets' => $ticketRepository->findAll(),
         ]);
     }
 
     #[Route('/new', name: 'app_ticket_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request): Response
     {
         $ticket = new Ticket();
+        $user = $this->security->getUser();
+
         $form = $this->createForm(TicketType::class, $ticket);
+
         $form->handleRequest($request);
+        
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($ticket);
-            $entityManager->flush();
-
+            
+            // 2. Cała logika jest w serwisie!
+            $this->TicketService->processNewTicket($ticket); 
+            
+            // ... powiadomienie i przekierowanie
             return $this->redirectToRoute('app_ticket_index', [], Response::HTTP_SEE_OTHER);
         }
 

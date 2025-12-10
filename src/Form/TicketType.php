@@ -27,15 +27,18 @@ class TicketType extends AbstractType
             ->add('category', EntityType::class, [
                 'class' => Category::class,
                 'choice_label' => 'name',
-                'placeholder' => 'Wybierz kategorię', 
-            ])
-        ;
-}
+                'placeholder' => 'Wybierz kategorię',
+                'label' => 'Status zgłoszenia', 
+            ]);
+    }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Ticket::class,
+            'status_disabled' => false,
         ]);
+
+        $resolver->setAllowedTypes('status_disabled', 'bool');
     }
 }
