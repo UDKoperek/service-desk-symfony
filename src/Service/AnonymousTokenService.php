@@ -38,11 +38,14 @@ final class AnonymousTokenService
                 null,  // 2. Domena — bezwzględnie na null
                 true,
                 true,  // 3. Secure — bezwzględnie na false (dla HTTP)
-                false,  // 4. HttpOnly — bezwzględnie na false (aby ułatwić zapis)
+                
                 Cookie::SAMESITE_LAX
             );
         }
-        
         return $token;
+    }
+    public function getNewCookie(): ?Cookie
+    {
+        return $this->newCookie;
     }
 }

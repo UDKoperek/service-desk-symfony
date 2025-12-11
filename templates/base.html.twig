@@ -12,6 +12,40 @@
         {% endblock %}
     </head>
     <body>
+        {#Główny blok nawigacyjny#}
+        <nav style="padding: 10px; background-color: #f8f8f8; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+            
+            {# Link do Strony Głównej / Listy Biletów #}
+            <div class="nav-links">
+                <a href="{{ path('app_ticket_index') }}" style="margin-right: 20px; text-decoration: none; color: #333;">🏠 Home / Moje Bilety</a>
+                
+                {% if app.user %}
+                    <a href="{{ path('app_ticket_new') }}" style="text-decoration: none; color: #007bff;">➕ Nowy Bilet</a>
+                {% endif %}
+            </div>
+
+            {# Warunkowe przyciski Logowanie/Wylogowanie #}
+            <div class="user-actions">
+                {% if app.user %}
+                    {# UŻYTKOWNIK ZALOGOWANY #}
+                    <span style="margin-right: 15px; color: #5cb85c; font-weight: bold;">
+                        Witaj, {{ app.user.email }}!
+                    </span> 
+                    
+                    <a href="{{ path('app_logout') }}" style="text-decoration: none; padding: 5px 10px; border: 1px solid #d9534f; color: #d9534f;">
+                        Wyloguj
+                    </a>
+                
+                {% else %}
+                    {# UŻYTKOWNIK ANONIMOWY #}
+                    <a href="{{ path('app_login') }}" style="text-decoration: none; padding: 5px 10px; border: 1px solid #5cb85c; color: #fff; background-color: #5cb85c;">
+                        Zaloguj
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
+        {# ---------------------------------------------------- #}
+        
         {% block body %}{% endblock %}
     </body>
 </html>

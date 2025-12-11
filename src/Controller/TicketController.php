@@ -2,47 +2,35 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
+use App\Entity\Comment;
 use App\Entity\Ticket;
 use App\Form\TicketType;
-use App\Repository\TicketRepository; 
+use App\Form\CommentType; 
 use App\Service\TicketService;
+use App\Security\Voter\AbstractTicketVoter;
+use App\Security\Voter\CommentVoter;
+use App\Service\CommentService;
 use App\Service\AnonymousTokenService;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\Security;
 
 #[Route('/ticket')]
 final class TicketController extends AbstractController
 {
     public function __construct(
-        private readonly Security $security,
-        private readonly TicketService $TicketService,
-        private readonly AnonymousTokenService $tokenService,
-        private readonly TicketRepository $ticketRepository,
+        private readonly TicketService $ticketService,
+        private readonly CommentService $commentService, 
+        private readonly AnonymousTokenService $anonymousTokenService, // Wstrzyknięcie
     ) {
     }
 
     #[Route(name: 'app_ticket_index', methods: ['GET'])]
     public function index(): Response
     {
-        $user = $this->security->getUser();
-        $authorId = null;
-        $sessionToken = null;
-
-        if ($user) {
-            $authorId = $user->getId();
-        } 
-        // 2. Sprawdzenie, czy użytkownik jest ANONIMOWY (i czy ma aktywną sesję)
-        elseif (!$user) {
-            $sessionToken = $this->tokenService->getOrCreateToken();
-        }
-
-        // Przekazanie kryteriów filtrowania do Repository
-        $tickets = $this->ticketRepository->findTicketsForUser($authorId, $sessionToken);
+        $tickets = $this->ticketService->getTicketsForCurrentUser();
 
         return $this->render('ticket/index.html.twig', [
             'tickets' => $tickets,
@@ -53,8 +41,7 @@ final class TicketController extends AbstractController
     public function new(Request $request): Response
     {
         $ticket = new Ticket();
-        $user = $this->security->getUser();
-
+        
         $form = $this->createForm(TicketType::class, $ticket);
 
         $form->handleRequest($request);
@@ -62,11 +49,17 @@ final class TicketController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             
-            // 2. Cała logika jest w serwisie!
-            $this->TicketService->processNewTicket($ticket); 
+            $this->ticketService->processNewTicket($ticket); 
             
-            // ... powiadomienie i przekierowanie
-            return $this->redirectToRoute('app_ticket_index', [], Response::HTTP_SEE_OTHER);
+            // Zapisz token anonimowego użytkownika do ciasteczka, jeśli został wygenerowany
+            $response = $this->redirectToRoute('app_ticket_index', [], Response::HTTP_SEE_OTHER);
+            
+            $newCookie = $this->anonymousTokenService->getNewCookie();
+            if ($newCookie) {
+                $response->headers->setCookie($newCookie);
+            }
+
+            return $response;
         }
 
         return $this->render('ticket/new.html.twig', [
@@ -75,24 +68,62 @@ final class TicketController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_ticket_show', methods: ['GET'])]
-    public function show(Ticket $ticket): Response
+    #[Route('/{id}', name: 'app_ticket_show', methods: ['GET', 'POST'])]
+    public function show(Request $request, Ticket $ticket): Response
     {
-        $this->denyAccessUnlessGranted('SHOW', $ticket);
+        $this->denyAccessUnlessGranted(AbstractTicketVoter::SHOW, $ticket);
+        
+        $comment = new Comment();
+        $canComment = $this->isGranted(CommentVoter::COMMENT_ON_TICKET, $ticket);
+
+        $commentForm = $this->createForm(CommentType::class, $comment, [
+            'data_class' => Comment::class,
+            'disabled' => !$canComment, 
+        ]);
+        
+        $commentForm->handleRequest($request);
+
+        if ($commentForm->isSubmitted() && $commentForm->isValid()) {
+            
+            $this->denyAccessUnlessGranted(CommentVoter::COMMENT_ON_TICKET, $ticket);
+            
+
+            $content = $comment->getContent(); 
+
+            $user = $this->getUser();
+            $anonymousToken = null;
+
+            if (!$user instanceof User) {
+                // Użytkownik jest anonimowy, pobieramy token z ciasteczka
+                $anonymousToken = $this->anonymousTokenService->getOrCreateToken();
+                // Ustawiamy $user na null
+                $user = null; 
+            }
+
+            $this->commentService->createAndAddComment($content, $ticket, $user, $anonymousToken);
+
+            $this->addFlash('success', 'Komentarz został dodany pomyślnie!');
+
+            return $this->redirectToRoute('app_ticket_show', ['id' => $ticket->getId()]);
+        }
+
         return $this->render('ticket/show.html.twig', [
             'ticket' => $ticket,
+            'commentForm' => $commentForm->createView(),
+            'canComment' => $canComment, 
         ]);
     }
 
     #[Route('/{id}/edit', name: 'app_ticket_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Ticket $ticket, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Ticket $ticket): Response
     {
-        $this->denyAccessUnlessGranted('EDIT', $ticket);
+        $this->denyAccessUnlessGranted(AbstractTicketVoter::EDIT, $ticket);
+        
         $form = $this->createForm(TicketType::class, $ticket);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            $this->ticketService->saveChanges();
 
             return $this->redirectToRoute('app_ticket_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -104,12 +135,12 @@ final class TicketController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_ticket_delete', methods: ['POST'])]
-    public function delete(Request $request, Ticket $ticket, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, Ticket $ticket): Response
     {
-        $this->denyAccessUnlessGranted('DELETE', $ticket);
+        $this->denyAccessUnlessGranted(AbstractTicketVoter::DELETE, $ticket);
+        
         if ($this->isCsrfTokenValid('delete'.$ticket->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($ticket);
-            $entityManager->flush();
+            $this->ticketService->deleteTicket($ticket);
         }
 
         return $this->redirectToRoute('app_ticket_index', [], Response::HTTP_SEE_OTHER);

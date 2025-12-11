@@ -3,37 +3,37 @@
 namespace App\Form;
 
 use App\Entity\Comment;
-use App\Entity\Ticket;
-use App\Entity\User;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class CommentType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        // Opcja 'disabled' na całym formularzu
+        $builder->setDisabled(!$options['is_enabled']); 
+
         $builder
-            ->add('content')
-            ->add('createdAt', null, [
-                'widget' => 'single_text',
+            ->add('content', TextareaType::class, [
+                // Inne opcje dla pola content
             ])
-            ->add('ticket', EntityType::class, [
-                'class' => Ticket::class,
-                'choice_label' => 'id',
-            ])
-            ->add('author', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => 'id',
-            ])
-        ;
+            ->add('submit', SubmitType::class, [
+                'label' => 'Dodaj komentarz',
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Comment::class,
+            // 1. Zdefiniowanie niestandardowej opcji 'is_enabled'
+            'is_enabled' => true, 
         ]);
+        
+        // 2. Wymuś, aby 'is_enabled' było boolowskie (opcjonalnie, ale dobra praktyka)
+        $resolver->setAllowedTypes('is_enabled', 'bool');
     }
 }

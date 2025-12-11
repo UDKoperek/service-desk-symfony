@@ -24,10 +24,18 @@ class Comment
     #[ORM\JoinColumn(nullable: false)]
     private ?Ticket $ticket = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: true)]
     private ?User $author = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $anonymousToken = null;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
+    
     public function getId(): ?int
     {
         return $this->id;
@@ -78,6 +86,17 @@ class Comment
     {
         $this->author = $author;
 
+        return $this;
+    }
+
+    public function getAnonymousToken(): ?string
+    {
+        return $this->anonymousToken;
+    }
+
+    public function setAnonymousToken(?string $anonymousToken): static
+    {
+        $this->anonymousToken = $anonymousToken;
         return $this;
     }
 }

@@ -7,29 +7,43 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+/**
+ * Encja reprezentująca użytkownika systemu.
+ * Implementuje interfejsy wymagane przez system bezpieczeństwa Symfony.
+ */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    /**
+     * Główny klucz encji.
+     */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    /**
+     * Nazwa użytkownika, używana jako identyfikator do logowania (musi być unikalna).
+     */
     #[ORM\Column(length: 180, unique: true)]
     private ?string $username = null;
 
+    /**
+     * Adres email użytkownika.
+     */
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
+     * Tablica ról użytkownika (np. ROLE_ADMIN, ROLE_AGENT).
      */
     #[ORM\Column]
     private array $roles = [];
 
     /**
      * @var string The hashed password
+     * Hashed hasło użytkownika. Nigdy nie przechowujemy hasła w formie czystego tekstu!
      */
     #[ORM\Column]
     private ?string $password = null;
@@ -47,10 +61,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUsername(string $username): static
     {
         $this->username = $username;
-
         return $this;
     }
-
 
     public function getEmail(): ?string
     {
@@ -60,26 +72,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
     /**
-     * A visual identifier that represents this user.
+     * Zwraca identyfikator używany do logowania (zazwyczaj nazwa użytkownika lub email).
      *
      * @see UserInterface
      */
     public function getUserIdentifier(): string
     {
+        // Używamy nazwy użytkownika jako identyfikatora logowania.
         return (string) $this->username; 
     }
 
     /**
+     * Zwraca listę ról użytkownika. Zapewnia, że każdy użytkownik ma rolę podstawową 'ROLE_USER'.
+     *
      * @see UserInterface
      */
     public function getRoles(): array
     {
         $roles = $this->roles;
+        // Gwarantuje, że każdy użytkownik ma przynajmniej domyślną rolę
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
@@ -91,11 +106,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
-
         return $this;
     }
 
     /**
+     * Zwraca zakodowane (hashed) hasło użytkownika.
+     *
      * @see PasswordAuthenticatedUserInterface
      */
     public function getPassword(): ?string
@@ -106,21 +122,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
     /**
-     * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.
+     * Bezpieczna serializacja: Zapewnia, że sesja nie zawiera faktycznych skrótów haseł, 
+     * ale jedynie ich bezpieczny hasz (CRC32C). Jest to standard bezpieczeństwa Symfony.
      */
     public function __serialize(): array
     {
         $data = (array) $this;
+        // Zastępuje pełne hasło w sesji jego haszem CRC32C.
         $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
 
         return $data;
     }
 
+    /**
+     * Metoda przestarzała w Symfony 7.0+ i powinna być usunięta przy przejściu na Symfony 8.
+     * Wcześniej służyła do usuwania poufnych danych po uwierzytelnieniu (np. hasła).
+     * * @deprecated
+     */
     #[\Deprecated]
     public function eraseCredentials(): void
     {
