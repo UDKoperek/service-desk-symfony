@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ticket{% endblock %}
+
+{% block body %}
+    <h1>Bilet</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ ticket.id }}</td>
+            </tr>
+            <tr>
+                <th>Nazwa</th>
+                <td>{{ ticket.title }}</td>
+            </tr>
+            <tr>
+                <th>Treść</th>
+                <td>{{ ticket.content }}</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td>{{ ticket.status.value }}</td>
+            </tr>
+            <tr>
+                <th>Prioritet</th>
+                <td>{{ ticket.priority }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>💬 Komentarze</h2>
+
+    {% if ticket.comments is not empty %}
+        {% for comment in ticket.comments|sort((a, b) => a.createdAt <=> b.createdAt) %}
+            <div class="comment">
+                <strong>
+                {% if comment.author %}
+                    {{ comment.author.username }}
+                    {{ comment.author.email }}
+                {% elseif comment.anonymousToken %}
+                    [Autor anonimowy]
+                {% else %}
+                    [Nieznany Autor]
+                {% endif %}
+                </strong>
+                <small>({{ comment.createdAt|date('Y-m-d H:i') }})</small>:
+                <p>{{ comment.content }}</p>
+            </div>
+            <hr>
+        {% endfor %}
+    {% else %}
+        <p>Brak komentarzy. Bądź pierwszy!</p>
+    {% endif %}
+
+
+    {# 2. FORMULARZ DODAWANIA NOWEGO KOMENTARZA (Poprawny warunek canComment) #}
+    {% if canComment %}
+        {# Ten warunek sprawdza, czy anonimowy autor lub zalogowany user może komentować #}
+        <h3>Dodaj komentarz</h3>
+
+        {# Upewnij się, że używasz poprawnej nazwy zmiennej commentForm #}
+        {{ form_start(commentForm) }}
+            {{ form_errors(commentForm) }}
+
+            {{ form_row(commentForm.content) }}
+
+            {# Ręczne renderowanie przycisku 'submit' #}
+            {{ form_widget(commentForm.submit, {'attr': {'class': 'btn btn-primary'}, 'label': 'Dodaj komentarz'}) }}
+        {{ form_end(commentForm) }}
+    {% else %}
+        {# Jeśli canComment jest FALSE, wyświetlamy komunikat #}
+        <p class="alert alert-info">
+            Musisz być autorem tego biletu lub zalogowanym Agentem/Administratorem, aby dodać komentarz.
+        </p>
+    {% endif %}
+
+    <a href="{{ path('app_ticket_index') }}">back to list</a>
+
+    <a href="{{ path('app_ticket_edit', {'id': ticket.id}) }}">edit</a>
+
+    {{ include('ticket/_delete_form.html.twig') }}
+{% endblock %}

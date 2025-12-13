@@ -8,6 +8,8 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -33,6 +35,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
+    public function loadUserByIdentifier(string $identifier): UserInterface
+    {
+
+        $user = $this->findOneBy(['username' => $identifier]);
+
+        if (!$user) {
+            throw new UserNotFoundException(sprintf('Użytkownik "%s" nie został znaleziony.', $identifier));
+        }
+
+        if (!($user instanceof UserInterface)) {
+            throw new \LogicException('User provider zwrócił niepoprawny typ obiektu.');
+        }
+        return $user; // Zwraca obiekt App\Entity\User
+    }
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

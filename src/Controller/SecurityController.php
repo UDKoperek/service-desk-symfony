@@ -25,7 +25,9 @@ class SecurityController extends AbstractController
         // aby uniknąć ponownego wyświetlania formularza logowania.
         if ($this->getUser()) {
             // Zmień 'app_ticket_index' na docelową stronę po zalogowaniu
-            return $this->redirectToRoute('app_ticket_index'); 
+        return $this->render('security/login.html.twig', [
+            'error' => $error,
+        ]);
         }
 
         // Pobiera błąd logowania (jeśli istnieje) z sesji.

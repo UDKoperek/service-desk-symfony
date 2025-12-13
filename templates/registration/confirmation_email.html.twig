@@ -1,0 +1,25 @@
+{# templates/registration/confirmation_email.html.twig #}
+
+{% block body %}
+
+    <h1>Potwierdź swój adres e-mail</h1>
+
+    <p>
+        Witaj! Aby dokończyć rejestrację, kliknij w poniższy link:
+        <br><br>
+        <a href="{{ signedUrl|raw }}" style="display: inline-block; padding: 10px 20px; color: white; background-color: #007bff; text-decoration: none; border-radius: 5px;">
+            Potwierdź mój e-mail
+        </a>
+        <br><br>
+        Ten link jest ważny tylko przez 
+        {# ZMIANA LINII PONIŻEJ: KLUCZ jest wiadomością, DANE są parametrami #}
+        {{ expiresAtMessageKey|trans(expiresAtMessageData, 'VerifyEmailBundle') }}. 
+    </p>
+
+    <p>
+        Pozdrawiamy,
+        <br>
+        Zespół Twojej Aplikacji
+    </p>
+
+{% endblock %}
