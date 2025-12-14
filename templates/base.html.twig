@@ -36,9 +36,6 @@
                         </button>
                     </form>
                 {% else %}
-                    {# Użytkownik WYLOGOWANY #}
-
-                    {# 1. UKRYTY FORMULARZ LOGOWANIA #}
                     <form action="{{ path('app_login') }}" method="POST" id="login-form" style="display: none;">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token('login') }}">
                         {# W tym formularzu nie musisz mieć przycisku, bo i tak jest ukryty #}
@@ -50,9 +47,7 @@
                         {# W tym formularzu nie musisz mieć przycisku, bo i tak jest ukryty #}
                     </form>
                     
-                    {# 3. WIDOCZNE PRZYCISKI AKTYWUJĄCE FORMULARZE #}
-                    
-                    <button 
+                    <button
                         type="button" 
                         class="btn btn-primary" 
                         onclick="document.getElementById('login-form').submit();"
@@ -68,6 +63,18 @@
                         Zarejestruj
                     </button>
 
+                {% endif %}
+
+                {% if is_granted('ROLE_AGENT') or is_granted('ROLE_ADMIN') %}
+                    <a 
+                        href="{{ path('app_category_index') }}" 
+                        class="btn btn-success"
+                        role="button"
+                        style="margin-left: 10px;" 
+                    >
+                        Kategorie
+                    </a>
+                    
                 {% endif %}
             </div>
         </nav>

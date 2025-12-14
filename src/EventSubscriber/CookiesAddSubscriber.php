@@ -13,22 +13,17 @@ class ResponseCookieSubscriber implements EventSubscriberInterface
         private readonly AnonymousTokenService $tokenService
     ) {}
 
-    // 🔑 Metoda, która zostanie uruchomiona na zdarzeniu Response
     public function onKernelResponse(ResponseEvent $event): void
     {
-        // 1. Sprawdź, czy serwis wygenerował nowe ciasteczko w tym żądaniu
         $cookie = $this->tokenService->getNewCookie();
 
         if ($cookie) {
-            // 2. Dodaj ciasteczko do nagłówków odpowiedzi
             $event->getResponse()->headers->setCookie($cookie);
         }
     }
 
-    // 🔑 Rejestracja subskrybenta
     public static function getSubscribedEvents(): array
     {
-        // Uruchomienie onKernelResponse tuż przed wysłaniem odpowiedzi
         return [
             KernelEvents::RESPONSE => 'onKernelResponse',
         ];

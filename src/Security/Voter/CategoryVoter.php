@@ -28,11 +28,11 @@ final class CategoryVoter extends Voter
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
+
         $user = $token->getUser(); 
         /** @var Category|null $category */
         $category = $subject; 
 
-        // Wszystkie akcje wymagają zalogowanego użytkownika (User) i roli ROLE_ADMIN
         if (!$user instanceof User) {
             return false;
         }
@@ -48,12 +48,12 @@ final class CategoryVoter extends Voter
 
     private function canShow(User $user): bool
     {
-        return $this->security->isGranted('ROLE_ADMIN');
+        return $this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_AGENT');
     }
 
     private function canCreate(User $user): bool
     {
-        return $this->security->isGranted('ROLE_ADMIN');
+        return $this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_AGENT');
     }
 
     private function canEdit(?Category $category, User $user): bool
@@ -61,7 +61,7 @@ final class CategoryVoter extends Voter
         if (!$category instanceof Category) {
              return false;
         }
-        return $this->security->isGranted('ROLE_ADMIN');
+        return $this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_AGENT');
     }
 
     private function canDelete(?Category $category, User $user): bool

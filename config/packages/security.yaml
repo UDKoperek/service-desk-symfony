@@ -35,7 +35,7 @@ security:
 
         # Sekcja /ticket jest jawnie otwarta dla anonimowych
         - { path: '^/ticket', roles: PUBLIC_ACCESS }
-        - { path: ^/category, roles: ROLE_ADMIN }
+        - { path: ^/category, roles: ROLE_AGENT }
 
         # Tylko te ścieżki są chronione:
         - { path: '^/profil', roles: IS_AUTHENTICATED_FULLY }
