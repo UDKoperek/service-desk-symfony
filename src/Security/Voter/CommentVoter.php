@@ -48,7 +48,12 @@ class CommentVoter extends Voter
         if ($this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_AGENT')) {
             return true;
         }
-        // 2. Właściciel biletu (zalogowany)
+
+        $ticketStatus = $ticket->getStatus();
+        if ($ticketStatus->value === "Closed")
+        {
+            return false;
+        }
         $author = $ticket->getAuthor();
         if ($author !== null && $author->getId() === $user->getId()) {
             return true;
@@ -58,9 +63,20 @@ class CommentVoter extends Voter
 
     private function canCommentAnonymous(Ticket $ticket): bool
     {
+        $ticketStatus = $ticket->getStatus();
+
+        if ($ticketStatus->value === "Closed")
+        {
+            return false;
+        }
+
         try {
-            $currentAnonymousToken = $this->anonymousTokenService->getOrCreateToken();
+            $currentAnonymousToken = $this->anonymousTokenService->getCurrentToken(); 
         } catch (\Exception) {
+            return false;
+        }
+        
+        if (!$currentAnonymousToken) {
             return false;
         }
         

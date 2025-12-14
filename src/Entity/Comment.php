@@ -24,7 +24,7 @@ class Comment
     #[ORM\JoinColumn(nullable: false)]
     private ?Ticket $ticket = null;
 
-    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: true)]
     private ?User $author = null;
 

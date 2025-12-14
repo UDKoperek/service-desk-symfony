@@ -3,20 +3,20 @@
 {% block title %}Ticket{% endblock %}
 
 {% block body %}
-    <h1>Ticket</h1>
+    <h1>Bilet</h1>
 
     <table class="table">
         <tbody>
             <tr>
-                <th>Id</th>
+                <th>Id biletu</th>
                 <td>{{ ticket.id }}</td>
             </tr>
             <tr>
-                <th>Title</th>
+                <th>Tytuł</th>
                 <td>{{ ticket.title }}</td>
             </tr>
             <tr>
-                <th>Content</th>
+                <th>Treść</th>
                 <td>{{ ticket.content }}</td>
             </tr>
             <tr>
@@ -24,12 +24,11 @@
                 <td>{{ ticket.status.value }}</td>
             </tr>
             <tr>
-                <th>Priority</th>
+                <th>Prioritet</th>
                 <td>{{ ticket.priority }}</td>
             </tr>
         </tbody>
     </table>
-    {# ... Treść strony wyświetlająca szczegóły biletu ... #}
 
     <h2>💬 Komentarze</h2>
 
@@ -40,6 +39,7 @@
                 <strong>
                 {% if comment.author %}
                     {{ comment.author.username }}
+                    {{ comment.author.email }}
                 {% elseif comment.anonymousToken %}
                     Anonimowy Autor
                 {% else %}

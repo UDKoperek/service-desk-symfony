@@ -17,19 +17,17 @@ class CommentService
         $this->entityManager = $entityManager;
     }
 
-    public function createAndAddComment(string $content, Ticket $ticket, ?User $author, ?string $anonymousToken = null): void
-    {
-        $comment = new Comment();
-        $comment->setContent($content);
-        $comment->setTicket($ticket);
+    public function createAndAddComment(Comment $comment, Ticket $ticket, ?User $user, ?string $anonymousToken): void {
         
-        if ($author !== null) {
-            $comment->setAuthor($author);
-        } elseif ($anonymousToken !== null) {
-            $comment->setAnonymousToken($anonymousToken);
+        $comment->setTicket($ticket);
+  
+        if ($user) {
+            $comment->setAuthor($user);
+            $comment->setAnonymousToken(null);
+        } elseif ($anonymousToken) {
+            $comment->setAnonymousToken($anonymousToken); 
+            $comment->setAuthor(null);
         } else {
-            // To jest przypadek błędu (komentarz bez autora/tokenu)
-            throw new \LogicException('Komentarz musi mieć autora (User) lub token anonimowy.');
         }
 
         $this->entityManager->persist($comment);

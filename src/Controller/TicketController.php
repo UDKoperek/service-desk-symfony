@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Entity\Comment;
 use App\Entity\Ticket;
 use App\Form\TicketType;
@@ -74,6 +75,8 @@ final class TicketController extends AbstractController
         $this->denyAccessUnlessGranted(AbstractTicketVoter::SHOW, $ticket);
         
         $comment = new Comment();
+
+
         $canComment = $this->isGranted(CommentVoter::COMMENT_ON_TICKET, $ticket);
 
         $commentForm = $this->createForm(CommentType::class, $comment, [
@@ -86,21 +89,21 @@ final class TicketController extends AbstractController
         if ($commentForm->isSubmitted() && $commentForm->isValid()) {
             
             $this->denyAccessUnlessGranted(CommentVoter::COMMENT_ON_TICKET, $ticket);
-            
 
             $content = $comment->getContent(); 
 
             $user = $this->getUser();
+
             $anonymousToken = null;
 
-            if (!$user instanceof User) {
+            if (!($user instanceof User)) {
                 // Użytkownik jest anonimowy, pobieramy token z ciasteczka
                 $anonymousToken = $this->anonymousTokenService->getOrCreateToken();
                 // Ustawiamy $user na null
                 $user = null; 
             }
 
-            $this->commentService->createAndAddComment($content, $ticket, $user, $anonymousToken);
+            $this->commentService->createAndAddComment($comment, $ticket, $user, $anonymousToken);
 
             $this->addFlash('success', 'Komentarz został dodany pomyślnie!');
 

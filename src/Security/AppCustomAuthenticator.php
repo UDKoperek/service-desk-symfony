@@ -39,7 +39,7 @@ class AppCustomAuthenticator extends AbstractLoginFormAuthenticator
     public function authenticate(Request $request): Passport
     {
         $username = $request->request->get('username', '');
-        
+        $password = $request->request->get('password', '');
         $user = $this->userRepository->findOneBy(['username' => $username]); 
 
         if (!$user) {
