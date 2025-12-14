@@ -2,12 +2,14 @@
 
 namespace App\Entity;
 
-use App\Repository\TicketRepository;
 use App\Enum\TicketStatus;
+use App\Enum\TicketPriority;
+use App\Repository\TicketRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -26,13 +28,28 @@ class Ticket
     private ?User $author = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Proszę wprowadzić tytuł biletu.')]
+    #[Assert\Length(
+        min: 5,
+        max: 255,
+        minMessage: 'Tytuł musi mieć co najmniej {{ limit }} symboli. Tytuł jest za krótki.',
+        maxMessage: 'Tytuł nie może zawierać więcej niż {{ limit }} symboli. Tytuł jeset za długi.'
+    )]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'Описание проблемы не может быть пустым.')]
+    #[Assert\Length(
+        min: 5,
+        max: 3000,
+        minMessage: 'Treść musi mieć co najmniej {{ limit }} symboli. Treść jeset za krótka.',
+        maxMessage: 'Treść mnie może zawierać więcej niż {{ limit }} symboli. Treść jeset za długa.'
+    )]
     private ?string $content = null;
 
-    #[ORM\Column(length: 20, nullable: true)]
-    private ?string $priority = null;
+    #[ORM\Column(type: 'string', enumType: TicketPriority::class)]
+    private TicketPriority $priority = TicketPriority::ABSENCE;
+
 
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'tickets')]
     #[ORM\JoinColumn(nullable: false)] // Cant be NULL
@@ -119,12 +136,12 @@ class Ticket
         return $this;
     }
 
-    public function getPriority(): ?string
+    public function getPriority(): TicketPriority
     {
         return $this->priority;
     }
 
-    public function setPriority(?string $priority): static
+    public function setPriority(TicketPriority $priority): self
     {
         $this->priority = $priority;
 

@@ -18,7 +18,7 @@ class CommentType extends AbstractType
 
         $builder
             ->add('content', TextareaType::class, [
-                // Inne opcje dla pola content
+                'label' => 'Treść'
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Dodaj komentarz',

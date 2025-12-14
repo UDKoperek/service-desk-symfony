@@ -8,15 +8,15 @@ use App\Entity\Ticket;
 use App\Form\TicketType;
 use App\Form\CommentType; 
 use App\Service\TicketService;
-use App\Security\Voter\AbstractTicketVoter;
-use App\Security\Voter\CommentVoter;
 use App\Service\CommentService;
 use App\Service\AnonymousTokenService;
+use App\Security\Voter\AbstractTicketVoter;
+use App\Security\Voter\CommentVoter;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Core\Security;
 
 #[Route('/ticket')]
 final class TicketController extends AbstractController
@@ -24,7 +24,8 @@ final class TicketController extends AbstractController
     public function __construct(
         private readonly TicketService $ticketService,
         private readonly CommentService $commentService, 
-        private readonly AnonymousTokenService $anonymousTokenService, // Wstrzyknięcie
+        private readonly AnonymousTokenService $anonymousTokenService,
+        private readonly Security $security,
     ) {
     }
 
@@ -42,8 +43,13 @@ final class TicketController extends AbstractController
     public function new(Request $request): Response
     {
         $ticket = new Ticket();
-        
-        $form = $this->createForm(TicketType::class, $ticket);
+
+        $isAgentorAdmin = $this->security->isGranted('ROLE_AGENT') || $this->security->isGranted('ROLE_ADMIN');
+        $formOptions = [
+            'status_disabled' => $isAgent,
+            'priority_disabled' => $isAgent,
+        ];
+        $form = $this->createForm(TicketType::class, $ticket, $formOptions);
 
         $form->handleRequest($request);
         
@@ -75,7 +81,6 @@ final class TicketController extends AbstractController
         $this->denyAccessUnlessGranted(AbstractTicketVoter::SHOW, $ticket);
         
         $comment = new Comment();
-
 
         $canComment = $this->isGranted(CommentVoter::COMMENT_ON_TICKET, $ticket);
 
@@ -121,8 +126,14 @@ final class TicketController extends AbstractController
     public function edit(Request $request, Ticket $ticket): Response
     {
         $this->denyAccessUnlessGranted(AbstractTicketVoter::EDIT, $ticket);
-        
-        $form = $this->createForm(TicketType::class, $ticket);
+
+        $isAgentorAdmin = $this->security->isGranted('ROLE_AGENT') || $this->security->isGranted('ROLE_ADMIN');
+        $formOptions = [
+            'status_disabled' => $isAgentorAdmin,
+            'priority_disabled' => $isAgentorAdmin,
+        ];
+
+        $form = $this->createForm(TicketType::class, $ticket, $formOptions);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

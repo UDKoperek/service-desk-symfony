@@ -71,7 +71,7 @@ class CommentVoter extends Voter
         }
 
         try {
-            $currentAnonymousToken = $this->anonymousTokenService->getCurrentToken(); 
+            $currentAnonymousToken = $this->anonymousTokenService->getOrCreateToken(); 
         } catch (\Exception) {
             return false;
         }

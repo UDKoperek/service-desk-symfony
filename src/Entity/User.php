@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use SymfonyCasts\Bundle\VerifyEmail\Model\VerifyEmailInterface;
@@ -29,12 +30,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, VerifyE
      * Nazwa użytkownika, używana jako identyfikator do logowania (musi być unikalna).
      */
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank(message: 'Nazwa użytkownika jest wymagana.')]
+    #[Assert\Length(
+        min: 3, 
+        max: 180, 
+        minMessage: 'Nazwa musi mieć co najmniej {{ limit }} znaki.',
+        maxMessage: 'Nazwa nie może przekroczyć {{ limit }} znaków.'
+    )]
     private ?string $username = null;
 
     /**
      * Adres email użytkownika.
      */
+    
     #[ORM\Column(length: 180)]
+    #[Assert\Email(
+        mode: 'strict',
+        message: '{{ value }} jest błędny.',
+    )]
     private string $email;
 
     /**
@@ -49,6 +62,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, VerifyE
      * Hashed hasło użytkownika. Nigdy nie przechowujemy hasła w formie czystego tekstu!
      */
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'Hasło jest wymagane.')] 
+    #[Assert\Length(
+        min: 8, 
+        minMessage: 'Hasło musi mieć co najmniej {{ limit }} znaków.'
+    )]
     private ?string $password = null;
 
     #[ORM\Column(type: Types::BOOLEAN)]

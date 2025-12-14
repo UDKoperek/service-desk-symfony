@@ -3,41 +3,38 @@
 {% block title %}Ticket index{% endblock %}
 
 {% block body %}
-    <h1>Ticket index</h1>
+    <h1>Twoje bilety</h1>
 
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
-                <th>Title</th>
-                <th>Content</th>
+                <th>Id Biletu</th>
+                <th>Tytuł</th>
                 <th>Status</th>
-                <th>Priority</th>
-                <th>actions</th>
-                <th>Category</th>
+                <th>Priorytet</th>
+                <th>Kategoria</th>
             </tr>
         </thead>
         <tbody>
         {% for ticket in tickets %}
             <tr>
-                <td>{{ ticket.id }}</td>
-                <td>{{ ticket.title }}</td>
-                <td>{{ ticket.content }}</td>
-                <td>{{ ticket.status.value }}</td>
-                <td>{{ ticket.priority }}</td>
+                <td>{{ ticket.id ?? 'Nieznany ID - BŁĄD'}}</td>
+                <td>{{ ticket.title ?? 'Nieznany tytuł - BŁĄD'}}</td>
+                <td>{{ ticket.status.value ?? 'Nieznany status - BŁĄD'}}</td>
+                <td>{{ ticket.priority.value ?? 'Nieznany Priorytet - BŁĄD'}}</td>
+                <td>{{ ticket.category.name ?? 'Nieznana Kategoria - BŁĄD' }}</td>
                 <td>
                     <a href="{{ path('app_ticket_show', {'id': ticket.id}) }}">show</a>
                     <a href="{{ path('app_ticket_edit', {'id': ticket.id}) }}">edit</a>
                 </td>
-                <td> {{ticket.Category ? ticket.Category.name : Brak}} </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="6">no records found</td>
+                <td colspan="6">Nie ma biletów, czas aby go stworzyć</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
 
-    <a href="{{ path('app_ticket_new') }}">Create new</a>
+    <a href="{{ path('app_ticket_new') }}">Stwórz bilet</a>
 {% endblock %}

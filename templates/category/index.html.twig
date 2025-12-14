@@ -1,16 +1,15 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Category index{% endblock %}
+{% block title %}Kategorie{% endblock %}
 
 {% block body %}
-    <h1>Category index</h1>
+    <h1>Wszystkie kategorie</h1>
 
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>actions</th>
+                <th>Id kategorii</th>
+                <th>Nazwa</th>
             </tr>
         </thead>
         <tbody>
@@ -25,7 +24,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="3">no records found</td>
+                <td colspan="3">Nie ma kategorii, czas aby go stworzyć</td>
             </tr>
         {% endfor %}
         </tbody>

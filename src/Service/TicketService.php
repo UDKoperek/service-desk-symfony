@@ -4,6 +4,8 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Entity\Ticket;
+use App\Enum\TicketStatus;
+use App\Enum\TicketPriority;
 use App\Service\AnonymousTokenService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -27,20 +29,25 @@ final class TicketService
         $user = $this->security->getUser();
         
         if ($user instanceof User) {
-            // 1. Zalogowany użytkownik: ustaw go jako autora
             $ticket->setAuthor($user);
-            $ticket->setSessionToken(null); 
+            $ticket->setSessionToken(null);
+
+            $isAgentOrAdmin = $this->security->isGranted('ROLE_AGENT') || $this->security->isGranted('ROLE_ADMIN');
+            if (!$isAgentOrAdmin)
+            {
+                $ticket->setPriority(TicketPriority::ABSENCE);
+                $ticket->setStatus(TicketStatus::NEW);
+            }
         } else {
-            // 2. Anonimowy użytkownik:
             
-            // 2a. Ustaw stałego użytkownika 'anonymous_submitter'
             $anonymousUser = $this->userRepository->findOneBy(['username' => 'anonymous_submitter']);
             if (!$anonymousUser) {
-                throw new \Exception('Brak konta anonimowego nadawcy.');
             }
-            $ticket->setAuthor($anonymousUser);
 
-            // 2b. Przypisz unikalne ID sesji jako token zabezpieczający
+            $ticket->setAuthor($anonymousUser);
+            $ticket->setPriority(TicketPriority::ABSENCE);
+            $ticket->setStatus(TicketStatus::NEW);
+
             $longTermToken = $this->anonymousTokenService->getOrCreateToken(); 
             $ticket->setSessionToken($longTermToken);
         }
@@ -54,29 +61,51 @@ final class TicketService
         $user = $this->security->getUser();
         $repository = $this->entityManager->getRepository(Ticket::class);
 
-        // 1. ADMIN LUB AGENT: ZOBACZ WSZYSTKO
         if ($this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_AGENT')) {
             return $repository->findAll(); 
         }
 
-        // 2. ZALOGOWANY UŻYTKOWNIK (Klient)
         if ($user instanceof User) {
-            // Zwróć bilety, gdzie użytkownik jest autorem
+
             return $repository->findBy(['author' => $user]);
         }
         
-        // 3. ANONIMOWY UŻYTKOWNIK
-        
-        // Pobierz token z ciasteczka
         $anonymousToken = $this->anonymousTokenService->getOrCreateToken(); // Zakładam, że ten serwis jest tu dostępny
 
         if ($anonymousToken) {
-            // Zwróć bilety, gdzie token sesyjny pasuje
             return $repository->findBy(['sessionToken' => $anonymousToken]);
         }
 
-        // 4. Całkowicie nieautoryzowany lub brak tokena
         return [];
+    }
+
+    public function editTicket(Ticket $ticket): void
+    {
+        $user = $this->security->getUser();
+        
+        if ($user instanceof User) {
+            $isAgentOrAdmin = $this->security->isGranted('ROLE_AGENT') || $this->security->isGranted('ROLE_ADMIN');
+            if ($isAgentOrAdmin)
+            {
+                $ticket->setPriority(TicketPriority::ABSENCE);
+                $ticket->setStatus(TicketStatus::NEW);
+            }
+        } else {
+            
+            $anonymousUser = $this->userRepository->findOneBy(['username' => 'anonymous_submitter']);
+            if (!$anonymousUser) {
+            }
+
+            $ticket->setAuthor($anonymousUser);
+            $ticket->setPriority(TicketPriority::ABSENCE);
+            $ticket->setStatus(TicketStatus::NEW);
+
+            $longTermToken = $this->anonymousTokenService->getOrCreateToken(); 
+            $ticket->setSessionToken($longTermToken);
+        }
+        
+        $this->entityManager->persist($ticket);
+        $this->entityManager->flush();
     }
 
     public function saveChanges(): void
