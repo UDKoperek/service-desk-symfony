@@ -5,6 +5,60 @@
 {% block body %}
     <h1>Twoje bilety</h1>
 
+    <div class="row mb-4 p-3 border rounded bg-light">
+        <h3>Filtrowanie i Sortowanie</h3>
+        
+        <form method="GET" action="{{ path('app_ticket_index') }}" class="row g-3 align-items-end">
+
+            <div class="col-md-4">
+                <label for="search" class="form-label">Szukaj (Tytuł/Treść)</label>
+                <input type="text" 
+                       name="search" 
+                       id="search" 
+                       class="form-control" 
+                       value="{{ filters.search }}">
+            </div>
+
+            <div class="col-md-2">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">-- Wszystkie --</option>
+                    {% set statuses = ['NEW', 'IN_PROGRESS', 'WAITING_FOR_USER', 'CLOSED'] %}
+                    {% for status_key in statuses %}
+                        <option value="{{ status_key }}" 
+                                {{ filters.status == status_key ? 'selected' : '' }}>
+                            {{ status_key | replace({'NEW': 'Nowy', 'IN_PROGRESS': 'W toku', 'WAITING_FOR_USER': 'Oczekuje na klienta', 'CLOSED': 'Zamknięty'}) }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="priority" class="form-label">Priorytet</label>
+                <select name="priority" id="priority" class="form-select">
+                    <option value="">-- Wszystkie --</option>
+                    {% set priorities = ['LOW', 'MEDIUM', 'HIGH'] %}
+                    {% for priority_key in priorities %}
+                        <option value="{{ priority_key }}" 
+                                {{ filters.priority == priority_key ? 'selected' : '' }}>
+                            {{ priority_key | replace({'LOW': 'Niski', 'MEDIUM': 'Średni', 'HIGH': 'Wysoki'}) }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <input type="hidden" name="sortBy" value="{{ filters.sortBy }}">
+            <input type="hidden" name="sortOrder" value="{{ filters.sortOrder }}">
+
+
+            {# 5. PRZYCISK #}
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Filtruj</button>
+                <a href="{{ path('app_ticket_index') }}" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+
     <table class="table">
         <thead>
             <tr>
@@ -13,10 +67,11 @@
                 <th>Status</th>
                 <th>Priorytet</th>
                 <th>Kategoria</th>
+                <th>Akcje</th>
             </tr>
         </thead>
         <tbody>
-        {% for ticket in tickets %}
+        {% for ticket in pagination %}
             <tr>
                 <td>{{ ticket.id ?? 'Nieznany ID - BŁĄD'}}</td>
                 <td>{{ ticket.title ?? 'Nieznany tytuł - BŁĄD'}}</td>
@@ -37,4 +92,7 @@
     </table>
 
     <a href="{{ path('app_ticket_new') }}">Stwórz bilet</a>
+    <div class="navigation text-center">
+        {{ knp_pagination_render(pagination) }}
+    </div>
 {% endblock %}

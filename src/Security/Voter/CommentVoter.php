@@ -28,15 +28,12 @@ class CommentVoter extends Voter
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         $user = $token->getUser();
-        /** @var Ticket $ticket */
+
         $ticket = $subject;
         
-        // ZALOGOWANY UŻYTKOWNIK
         if ($user instanceof User) {
             return $this->canCommentAuthenticated($ticket, $user);
         } 
-        
-        // ANONIMOWY UŻYTKOWNIK
         else {
             return $this->canCommentAnonymous($ticket);
         }
@@ -44,17 +41,20 @@ class CommentVoter extends Voter
 
     private function canCommentAuthenticated(Ticket $ticket, User $user): bool
     {
-        // 1. ADMIN lub AGENT
+
         if ($this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_AGENT')) {
             return true;
         }
 
         $ticketStatus = $ticket->getStatus();
+        
         if ($ticketStatus->value === "Closed")
         {
             return false;
         }
+
         $author = $ticket->getAuthor();
+
         if ($author !== null && $author->getId() === $user->getId()) {
             return true;
         }

@@ -12,11 +12,15 @@ use App\Service\CommentService;
 use App\Service\AnonymousTokenService;
 use App\Security\Voter\AbstractTicketVoter;
 use App\Security\Voter\CommentVoter;
+use App\Dto\TicketFilterDto;
+use App\Repository\TicketRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/ticket')]
 final class TicketController extends AbstractController
@@ -26,16 +30,51 @@ final class TicketController extends AbstractController
         private readonly CommentService $commentService, 
         private readonly AnonymousTokenService $anonymousTokenService,
         private readonly Security $security,
+        
     ) {
     }
 
     #[Route(name: 'app_ticket_index', methods: ['GET'])]
-    public function index(): Response
+    public function index(#[MapQueryString] TicketFilterDto $filters, 
+        TicketRepository $ticketRepository,
+        PaginatorInterface $paginator,
+        AnonymousTokenService $anonymousTokenService,
+    ): Response
     {
-        $tickets = $this->ticketService->getTicketsForCurrentUser();
+
+        $user = $this->getUser();
+        $anonymousToken = null;
+        $isAgentOrAdmin = $this->security->isGranted('ROLE_AGENT') || $this->security->isGranted('ROLE_ADMIN');
+
+        if (!$user instanceof User) {
+
+            $anonymousToken = $this->anonymousTokenService->getOrCreateToken();
+        }
+
+        $isAgentorAdmin = $this->security->isGranted('ROLE_AGENT') || $this->security->isGranted('ROLE_ADMIN');
+        $formOptions = [
+            'status_disabled' => $isAgentorAdmin,
+            'priority_disabled' => $isAgentorAdmin,
+        ];
+
+        $query = $ticketRepository->getFilteredTicketsQuery(
+            $filters,
+            $user,
+            $anonymousToken,
+            $isAgentOrAdmin
+        );
+
+        $pagination = $paginator->paginate(
+            $query,
+            $filters->page, 
+            15        
+        );
+        
 
         return $this->render('ticket/index.html.twig', [
-            'tickets' => $tickets,
+            'pagination' => $pagination,
+            'filters' => $filters,
+            'isAgentOrAdmin' => $isAgentOrAdmin,
         ]);
     }
 
@@ -46,8 +85,8 @@ final class TicketController extends AbstractController
 
         $isAgentorAdmin = $this->security->isGranted('ROLE_AGENT') || $this->security->isGranted('ROLE_ADMIN');
         $formOptions = [
-            'status_disabled' => $isAgent,
-            'priority_disabled' => $isAgent,
+            'status_disabled' => $isAgentorAdmin,
+            'priority_disabled' => $isAgentorAdmin,
         ];
         $form = $this->createForm(TicketType::class, $ticket, $formOptions);
 

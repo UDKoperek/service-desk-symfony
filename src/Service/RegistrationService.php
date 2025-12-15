@@ -20,13 +20,13 @@ class RegistrationService
 
     public function registerUser(User $user, string $plainPassword): void
     {
-        // 1. Haszowanie i Zapis Użytkownika
+        
         $hashedPassword = $this->userPasswordHasher->hashPassword(
             $user,
             $plainPassword
         );
         $user->setPassword($hashedPassword);
-        $user->setIsVerified(false); // Ustawiamy na niewerified przed zapisem
+        $user->setIsVerified(false);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();

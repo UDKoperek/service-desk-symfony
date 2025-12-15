@@ -2,9 +2,15 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
 use App\Entity\Ticket;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Enum\TicketStatus;
+use App\Enum\TicketPriority;
+use App\Dto\TicketFilterDto;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Knp\Component\Pager\PaginatorInterface;
 
 /**
  * @extends ServiceEntityRepository<Ticket>
@@ -27,23 +33,78 @@ class TicketRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('t');
 
         if ($authorId !== null) {
-            // ZALOGOWANY UŻYTKOWNIK: filtrowanie po polu 'author' (które jest relacją do encji User)
             $qb->where('t.author = :authorId')
                ->setParameter('authorId', $authorId);
 
         } elseif ($sessionToken !== null) {
-            // ANONIMOWY UŻYTKOWNIK: filtrowanie po polu 'sessionToken'
             $qb->where('t.sessionToken = :sessionToken')
                ->setParameter('sessionToken', $sessionToken);
         } else {
-            // Brak kryteriów (np. niezalogowany, ale bez aktywnej sesji lub tokena)
-            // Zwracamy pustą listę lub wszystkie (jeśli to publiczna strona)
-            // Zasadniczo: zwracamy pustą listę dla bezpieczeństwa
             return []; 
         }
 
         $qb->orderBy('t.createdAt', 'DESC');
 
         return $qb->getQuery()->getResult();
+    }
+
+    public function getFilteredTicketsQuery(
+        TicketFilterDto $filters,
+        ?User $user = null,
+        ?string $anonymousToken = null, 
+        bool $isAgentOrAdmin = false
+    ): Query
+    {
+        $qb = $this->createQueryBuilder('t')
+                   ->addSelect('a')
+                   ->leftJoin('t.category', 'c')
+                   ->leftJoin('t.author', 'a');
+
+        if (!$isAgentOrAdmin) {
+
+            if ($user !== null) { 
+                $qb->andWhere('t.author = :user')
+                   ->setParameter('user', $user);
+                   
+            } elseif ($anonymousToken !== null) { 
+                $qb->andWhere('t.sessionToken = :token')
+                   ->setParameter('token', $anonymousToken);
+                   
+            } else {
+                $qb->andWhere('1 = 0'); 
+            }
+        }
+
+        if ($filters->status) {
+            $statusEnum = TicketStatus::tryFrom($filters->status);
+            if ($statusEnum) {
+                $qb->andWhere('t.status = :status')
+                   ->setParameter('status', $statusEnum->value); 
+            }
+        }
+        
+        if ($filters->priority) {
+            
+            $priorityKey = strtoupper($filters->priority);
+            $priorityEnum = null;
+
+            try {
+                $priorityEnum = \App\Enum\TicketPriority::from($priorityKey);
+            } catch (\ValueError $e) {}
+
+            if ($priorityEnum) {
+                $qb->andWhere('t.priority = :priority') 
+                ->setParameter('priority', $priorityEnum->value); 
+            }
+        }
+
+        if ($filters->search) {
+            $qb->andWhere('t.title LIKE :search OR t.content LIKE :search')
+               ->setParameter('search', '%' . $filters->search . '%');
+        }
+
+        $qb->orderBy('t.' . $filters->sortBy, $filters->sortOrder);
+
+        return $qb->getQuery();
     }
 }
