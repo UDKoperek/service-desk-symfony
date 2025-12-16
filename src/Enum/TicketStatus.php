@@ -4,8 +4,8 @@ namespace App\Enum;
 
 enum TicketStatus: string
 {
-    case NEW = 'New';
-    case IN_PROGRESS = 'In Progress';
-    case WAITING_FOR_USER = 'Waiting for User';
-    case CLOSED = 'Closed';
+    case NEW = 'NEW';
+    case IN_PROGRESS = 'IN_PROGRESS';
+    case WAITING_FOR_USER = 'WAITING_FOR_USER';
+    case CLOSED = 'CLOSED';
 }

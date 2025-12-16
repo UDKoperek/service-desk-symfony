@@ -47,9 +47,11 @@ class Ticket
     )]
     private ?string $content = null;
 
-    #[ORM\Column(type: 'string', enumType: TicketPriority::class)]
+    #[ORM\Column(enumType: TicketPriority::class)]
     private TicketPriority $priority = TicketPriority::ABSENCE;
 
+    #[ORM\Column(enumType: TicketStatus::class)]
+    private TicketStatus $status = TicketStatus::NEW;
 
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'tickets')]
     #[ORM\JoinColumn(nullable: false)] // Cant be NULL
@@ -58,14 +60,9 @@ class Ticket
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $sessionToken = null;
 
-    /**
-     * @var Collection<int, Comment>
-     */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'ticket', orphanRemoval: true)]
+    
     private Collection $comments;
-
-    #[ORM\Column(type: 'string', enumType: TicketStatus::class)]
-    private TicketStatus $status = TicketStatus::NEW;
 
     public function __construct()
     {
@@ -166,6 +163,7 @@ class Ticket
         return $this;
     }
 
+    
     public function removeComment(Comment $comment): static
     {
         if ($this->comments->removeElement($comment)) {

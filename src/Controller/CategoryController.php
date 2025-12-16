@@ -122,9 +122,7 @@ final class CategoryController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, Category $category): Response
     {
-
-
-        $this->denyAccessUnlessGranted('DELETE_CATEGORY', $category); // POPRAWKA: Dodano $category jako subject
+        $this->denyAccessUnlessGranted('DELETE_CATEGORY', $category);
 
 
         if ($this->isCsrfTokenValid('delete'.$category->getId(), $request->getPayload()->getString('_token'))) {

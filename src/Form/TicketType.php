@@ -41,7 +41,6 @@ class TicketType extends AbstractType
                     'choice_label' => fn (TicketPriority $choice) => $choice->value,
                     'placeholder' => 'Wybierz status',
                     'label' => 'Priorytet',
-                    'disabled' => $options['priority_disabled'], 
                 ]);
             }
 
@@ -52,7 +51,6 @@ class TicketType extends AbstractType
                     'choice_label' => fn (TicketStatus $choice) => $choice->value,
                     'placeholder' => 'Wybierz status',
                     'label' => 'Status',
-                    'disabled' => $options['status_disabled'], 
                 ]);
             }
     }

@@ -37,11 +37,11 @@
                 <label for="priority" class="form-label">Priorytet</label>
                 <select name="priority" id="priority" class="form-select">
                     <option value="">-- Wszystkie --</option>
-                    {% set priorities = ['LOW', 'MEDIUM', 'HIGH'] %}
+                    {% set priorities = ['ABSENCE', 'LOW', 'MEDIUM', 'HIGH'] %}
                     {% for priority_key in priorities %}
                         <option value="{{ priority_key }}" 
-                                {{ filters.priority == priority_key ? 'selected' : '' }}>
-                            {{ priority_key | replace({'LOW': 'Niski', 'MEDIUM': 'Średni', 'HIGH': 'Wysoki'}) }}
+                            {{ filters.priority == priority_key ? 'selected' : '' }}>
+                            {{ priority_key | replace({'ABSENCE':'Nieustalony', 'LOW': 'Niski', 'MEDIUM': 'Średni', 'HIGH': 'Wysoki'}) }}
                         </option>
                     {% endfor %}
                 </select>

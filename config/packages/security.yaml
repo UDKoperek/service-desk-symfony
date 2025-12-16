@@ -10,7 +10,11 @@ security:
             entity:
                 class: App\Entity\User
                 property: username
-        
+                
+    role_hierarchy:
+        ROLE_USER: [ROLE_USER]
+        ROLE_AGENT: [ROLE_AGENT]
+        ROLE_ADMIN: [ROLE_AGENT, ROLE_ALLOWED_TO_SWITCH] # Admin dziedziczy Agen
 
     firewalls:
         dev:

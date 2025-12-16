@@ -51,18 +51,13 @@ final class TicketController extends AbstractController
             $anonymousToken = $this->anonymousTokenService->getOrCreateToken();
         }
 
-        $isAgentorAdmin = $this->security->isGranted('ROLE_AGENT') || $this->security->isGranted('ROLE_ADMIN');
-        $formOptions = [
-            'status_disabled' => $isAgentorAdmin,
-            'priority_disabled' => $isAgentorAdmin,
-        ];
-
         $query = $ticketRepository->getFilteredTicketsQuery(
             $filters,
             $user,
             $anonymousToken,
             $isAgentOrAdmin
         );
+        
 
         $pagination = $paginator->paginate(
             $query,
@@ -70,7 +65,6 @@ final class TicketController extends AbstractController
             15        
         );
         
-
         return $this->render('ticket/index.html.twig', [
             'pagination' => $pagination,
             'filters' => $filters,

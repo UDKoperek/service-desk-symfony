@@ -1,4 +1,13 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Zapisz') }}</button>
+    {{ form_row(form._token) }}
+    
+    {# Pozostałe pola formularza... #}
+    <div class="form-group">
+        {{ form_label(form.name, 'Nazwa Kategorii') }}
+        {{ form_widget(form.name, {'attr': {'placeholder': 'Wprowadź nazwę kategorii'}}) }}
+        {{ form_errors(form.name) }}
+    </div>
+
+    {{ form_rest(form) }}
+    <button type="submit" class="btn">{{ button_label|default('Zapisz') }}</button>
 {{ form_end(form) }}

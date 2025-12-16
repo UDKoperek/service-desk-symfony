@@ -77,7 +77,7 @@ abstract class AbstractTicketVoter extends Voter
         return $this->security->isGranted('ROLE_ADMIN');
     }
     
-    // --- LOGIKA DLA ANONIMOWYCH UŻYTKOWNIKÓW (POPRAWIONA) ---
+    // --- LOGIKA DLA ANONIMOWYCH UŻYTKOWNIKÓW ---
 
     private function canShowAnonymous(Ticket $ticket): bool
     {

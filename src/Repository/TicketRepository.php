@@ -55,10 +55,7 @@ class TicketRepository extends ServiceEntityRepository
         bool $isAgentOrAdmin = false
     ): Query
     {
-        $qb = $this->createQueryBuilder('t')
-                   ->addSelect('a')
-                   ->leftJoin('t.category', 'c')
-                   ->leftJoin('t.author', 'a');
+        $qb = $this->createQueryBuilder('t');
 
         if (!$isAgentOrAdmin) {
 
@@ -75,26 +72,20 @@ class TicketRepository extends ServiceEntityRepository
             }
         }
 
-        if ($filters->status) {
-            $statusEnum = TicketStatus::tryFrom($filters->status);
-            if ($statusEnum) {
+        if (!empty($filters->status)) {
+            $status = $filters->status;
+            if ($status) {
                 $qb->andWhere('t.status = :status')
-                   ->setParameter('status', $statusEnum->value); 
+                   ->setParameter('status', $status); 
             }
         }
         
-        if ($filters->priority) {
+        if (!empty($filters->priority)) {
             
-            $priorityKey = strtoupper($filters->priority);
-            $priorityEnum = null;
-
-            try {
-                $priorityEnum = \App\Enum\TicketPriority::from($priorityKey);
-            } catch (\ValueError $e) {}
-
-            if ($priorityEnum) {
+            $priority = $filters->priority;
+            if ($priority) {
                 $qb->andWhere('t.priority = :priority') 
-                ->setParameter('priority', $priorityEnum->value); 
+                ->setParameter('priority', $priority); 
             }
         }
 
