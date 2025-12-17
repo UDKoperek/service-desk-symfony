@@ -1,6 +1,6 @@
 # 🎫 Service Desk Pro
 
-A modern, high-performance ticket management system built with **Symfony 7.4** and **PHP 8.2+**. This application leverages **Symfony UX (Turbo/Stimulus)** for a seamless user experience and **SendGrid** for reliable automated communication.
+A modern, high-performance ticket management system built with **Symfony 7.4** and **PHP 8.2+**
 
 ---
 
