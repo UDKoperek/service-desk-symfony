@@ -85,4 +85,4 @@ Bash
 ```php bin/console --env=test doctrine:migrations:migrate --no-interaction```
 
 # Run tests
-php bin/phpunit
+```php bin/phpunit```
