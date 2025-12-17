@@ -14,7 +14,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * Implementuje interfejsy wymagane przez system bezpieczeństwa Symfony.
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User implements UserInterface, PasswordAuthenticatedUserInterface,
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     /**
      * Główny klucz encji.
@@ -87,9 +87,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface,
     }
 
     public function getEmail(): string
-{
-    return (string) $this->email; 
-}
+    {
+        return (string) $this->email; 
+    }
 
     public function setEmail(string $email): static
     {
