@@ -1,6 +1,7 @@
 # 🎫 Service Desk Pro
 
 A modern, high-performance ticket management system built with **Symfony 7.4** and **PHP 8.2+**
+<img width="1018" height="568" alt="image" src="https://github.com/user-attachments/assets/08a20165-a107-4b2b-bd81-8d0d976cf006" />
 
 ---
 
