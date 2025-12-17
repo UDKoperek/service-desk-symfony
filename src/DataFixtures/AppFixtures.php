@@ -21,33 +21,27 @@ class AppFixtures extends Fixture
     {
         $admin = new User();
         $admin->setEmail('admin@example.com');
-    
         $admin->setUsername('admin'); 
-    
         $admin->setPassword($this->passwordHasher->hashPassword($admin, 'password'));
-        $admin->setRoles(['ROLE_ADMIN']); 
+        $admin->setRoles(['ROLE_ADMIN']);
         $manager->persist($admin);
+        $manager->flush();
 
         $agent = new User();
         $agent->setEmail('agent@example.com');
-
         $agent->setUsername('agent.com'); 
-
         $agent->setPassword($this->passwordHasher->hashPassword($agent, 'password'));
-        $agent->setRoles(['ROLE_AGENT']); 
+        $agent->setRoles(['ROLE_AGENT']);
+        $agent->setIsVerified(true);
         $manager->persist($agent);
-
         $manager->flush();
 
         $anonymousUser = new User();
-
         $anonymousUser->setUsername(self::ANONYMOUS_USERNAME);
         $anonymousUser->setEmail(self::ANONYMOUS_USERNAME . '@example.com');
-
         $anonymousUser->setPassword($this->passwordHasher->hashPassword($anonymousUser, 'random_secure_string'));
-
         $anonymousUser->setRoles(['ROLE_ANONYMOUS_SUBMITTER']);
-
+        $anonymousUser->setIsVerified(false);  
         $existingUser = $manager->getRepository(User::class)->findOneBy(['username' => self::ANONYMOUS_USERNAME]);
         if (!$existingUser) {
             $manager->persist($anonymousUser);

@@ -8,15 +8,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use SymfonyCasts\Bundle\VerifyEmail\Model\VerifyEmailInterface;
-
 
 /**
  * Encja reprezentująca użytkownika systemu.
  * Implementuje interfejsy wymagane przez system bezpieczeństwa Symfony.
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User implements UserInterface, PasswordAuthenticatedUserInterface, VerifyEmailInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface,
 {
     /**
      * Główny klucz encji.
