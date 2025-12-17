@@ -26,7 +26,6 @@ jobs:
       - name: Create Database and Schema
         run: |
           mkdir -p var
-          php bin/console doctrine:database:create --env=test
           php bin/console doctrine:schema:create --env=test
 
       - name: Run Tests
