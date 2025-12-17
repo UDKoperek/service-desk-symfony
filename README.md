@@ -6,11 +6,6 @@ A modern, high-performance ticket management system built with **Symfony 7.4** a
 
 ## 🚀 Key Features
 
-### ⚡ Modern Frontend (Symfony UX)
-* **Single-Page Experience**: Powered by **Symfony Turbo**, providing fast navigation without full page reloads.
-* **Reactive UI**: Interactive components built with **Stimulus**.
-* **Asset Management**: Uses **AssetMapper**, eliminating the need for Node.js/Webpack on the production server.
-
 ### 🔐 Security & Access Control
 * **Email Verification**: Secure registration flow with link verification via `VerifyEmailBundle`.
 * **Role Hierarchy**: 
@@ -20,8 +15,6 @@ A modern, high-performance ticket management system built with **Symfony 7.4** a
 * **Voters**: Strict authorization logic to protect tickets and comments.
 
 ### 📧 Communication & Backend
-* **Mailing System**: Integrated with **SendGrid** for professional email delivery.
-* **Background Processing**: **Symfony Messenger** support for asynchronous task handling (e.g., sending emails without blocking the UI).
 * **Advanced Search**: Filtering and pagination (KnpPaginator) for efficient ticket management.
 
 ---
@@ -31,10 +24,8 @@ A modern, high-performance ticket management system built with **Symfony 7.4** a
 | Component | Technology |
 | :--- | :--- |
 | **Backend** | Symfony 7.4 (PHP 8.2+) |
-| **Database** | MySQL / MariaDB (Doctrine ORM) |
+| **Database** | MySQL (Doctrine ORM) |
 | **Mailing** | Symfony Mailer + SendGrid |
-| **Frontend** | Twig + Symfony UX (Turbo & Stimulus) |
-| **Task Queue** | Symfony Messenger |
 | **Testing** | PHPUnit + Symfony BrowserKit |
 
 ---
@@ -44,49 +35,54 @@ A modern, high-performance ticket management system built with **Symfony 7.4** a
 ### 1. Prerequisites
 * **PHP 8.2** or higher
 * **Composer**
-* **MySQL / MariaDB**
+* **MySQL** *
 
 ### 2. Clone and Install
-```bash
-git clone [https://github.com/your-username/service-desk.git](https://github.com/your-username/service-desk.git)
-cd service-desk
-composer install
+```bash```
+```git clone [https://github.com/your-username/service-desk.git](https://github.com/your-username/service-desk.git)```
+```cd "C:\your\path\service-desk-symphony-main"```
+```composer install```
 
 3. Environment Configuration ⚙️
 Create a local environment file:
 
 Bash
+```cp .env .env.local```
 
-cp .env .env.local
 Update your .env.local with your credentials:
 
-Code snippet
+Code snippet:
+```# Database ```
+```DATABASE_URL="mysql://db_user:db_password@127.0.0.1:3306/service-desk-symphony-main?serverVersion=10.4.32-MariaDB&charset=utf8mb4"```
 
-# Database
-DATABASE_URL="mysql://db_user:db_password@127.0.0.1:3306/service_desk?serverVersion=10.4.32-MariaDB&charset=utf8mb4"
+```# Mailer (SendGrid Example)```
+```MAILER_DSN=sendgrid://KEY@default```
 
-# Mailer (SendGrid Example)
-MAILER_DSN=sendgrid://KEY@default
+
+
+
 4. Database Initialization
-Bash
 
-php bin/console doctrine:database:create
-php bin/console doctrine:migrations:migrate --no-interaction
+Bash
+```php bin/console doctrine:database:create```
+```php bin/console doctrine:migrations:migrate --no-interaction```
 
 # Load test data (Admin, Agents, Tickets)
-php bin/console doctrine:fixtures:load --no-interaction
+```php bin/console doctrine:fixtures:load --no-interaction```
+
+
 5. Running the App
 Bash
+```php -S 127.0.0.1:8000 -t public```
 
 symfony serve
 🧪 Testing
 The project uses PHPUnit for functional and unit testing.
 
 Bash
-
 # Prepare test database
-php bin/console --env=test doctrine:database:create
-php bin/console --env=test doctrine:migrations:migrate --no-interaction
+```php bin/console --env=test doctrine:database:create```
+```php bin/console --env=test doctrine:migrations:migrate --no-interaction```
 
 # Run tests
 php bin/phpunit
