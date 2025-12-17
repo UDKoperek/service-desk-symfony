@@ -35,7 +35,8 @@ A modern, high-performance ticket management system built with **Symfony 7.4** a
 ### 1. Prerequisites
 * **PHP 8.2** or higher
 * **Composer**
-* **MySQL** *
+* **MySQL**
+* **XAMPP (Recommended)**
 
 ### 2. Clone and Install
 ```bash```
@@ -86,3 +87,44 @@ Bash
 
 # Run tests
 ```php bin/phpunit```
+
+
+PROBLEMS? Database? Try this ->
+Fixing the Development Environment (DEV)
+
+This will create one new migration file containing the entire structure of your database.
+
+Warning! These commands will permanently delete the data in your local database. If you have any important data there, make a backup (though this is rarely necessary during development).
+
+Bash
+
+# 1. Drop the database completely (to clear out any "ghost" migrations)
+t```php bin/console doctrine:database:drop --forcet```
+
+# 2. Create a clean database from scratch
+t```php bin/console doctrine:database:createt```
+
+# 3. Create a new migration.
+php bin/console make:migration
+
+# 4. Apply this new migration
+t```php bin/console doctrine:migrations:migratet```
+
+After this, a single file (e.g., Version2025...php) will appear in your migrations folder, and the migrate command will work without errors.
+
+2. Fixing the Test Environment (TEST)
+
+As mentioned earlier, migrations are not necessary for tests. Instead, we can use a different approach: direct schema creation. This is faster and avoids versioning errors.
+
+Run these commands for the test environment:
+
+Bash
+
+# 1. Drop the old test database
+t```php bin/console --env=test doctrine:database:drop --forcet```
+
+# 2. Create a new one
+t```php bin/console --env=test doctrine:database:createt```
+
+# 3. IMPORTANT: Create tables DIRECTLY (bypassing migration files)
+t```php bin/console --env=test doctrine:schema:create
