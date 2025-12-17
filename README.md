@@ -99,16 +99,16 @@ Warning! These commands will permanently delete the data in your local database.
 Bash
 
 # 1. Drop the database completely (to clear out any "ghost" migrations)
-t```php bin/console doctrine:database:drop --forcet```
+```php bin/console doctrine:database:drop --forcet```
 
 # 2. Create a clean database from scratch
-t```php bin/console doctrine:database:createt```
+```php bin/console doctrine:database:createt```
 
 # 3. Create a new migration.
 php bin/console make:migration
 
 # 4. Apply this new migration
-t```php bin/console doctrine:migrations:migratet```
+```php bin/console doctrine:migrations:migratet```
 
 After this, a single file (e.g., Version2025...php) will appear in your migrations folder, and the migrate command will work without errors.
 
@@ -121,10 +121,10 @@ Run these commands for the test environment:
 Bash
 
 # 1. Drop the old test database
-t```php bin/console --env=test doctrine:database:drop --forcet```
+```php bin/console --env=test doctrine:database:drop --forcet```
 
 # 2. Create a new one
-t```php bin/console --env=test doctrine:database:createt```
+```php bin/console --env=test doctrine:database:createt```
 
 # 3. IMPORTANT: Create tables DIRECTLY (bypassing migration files)
-t```php bin/console --env=test doctrine:schema:create
+```php bin/console --env=test doctrine:schema:create
