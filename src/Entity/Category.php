@@ -14,6 +14,9 @@ class Category
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Ticket::class)]
+    private Collection $tickets;
+    
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Nazwa kategorii nie może być pusta.')]
     private ?string $name = null;
