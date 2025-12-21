@@ -37,18 +37,17 @@ A modern, high-performance ticket management system built with **Symfony 7.4** a
 * **PHP 8.2** or higher
 * **Composer**
 * **MySQL**
-* **XAMPP (Recommended)**
+* **Docker**
 
 ### 2. Clone and Install
-```bash```
+bash
 ```git clone [https://github.com/your-username/service-desk.git](https://github.com/your-username/service-desk.git)```
 ```cd "C:\your\path\service-desk-symphony-main"```
 ```composer install```
 
 3. Environment Configuration ⚙️
 Create a local environment file:
-
-Bash
+bash
 ```cp .env .env.local```
 
 Update your .env.local with your credentials:
@@ -64,8 +63,7 @@ Code snippet:
 
 
 4. Database Initialization
-
-Bash
+bash
 ```php bin/console doctrine:database:create```
 ```php bin/console doctrine:migrations:migrate --no-interaction```
 
@@ -74,58 +72,69 @@ Bash
 
 
 5. Running the App
-Bash
+bash
 ```php -S 127.0.0.1:8000 -t public```
 
-symfony serve
 🧪 Testing
 The project uses PHPUnit for functional and unit testing.
 
-Bash
 # Prepare test database
+bash
 ```php bin/console --env=test doctrine:database:create```
 ```php bin/console --env=test doctrine:migrations:migrate --no-interaction```
 
 # Run tests
+bash
 ```php bin/phpunit```
 
 
-PROBLEMS? Database? Try this ->
-Fixing the Development Environment (DEV)
+# Service Desk Project 🎫
 
-This will create one new migration file containing the entire structure of your database.
+A professional ticket management system built with Symfony 7, PHP 8.2, and a Dockerized architecture.
 
-Warning! These commands will permanently delete the data in your local database. If you have any important data there, make a backup (though this is rarely necessary during development).
+## 🚀 Quick Start
 
-Bash
+To run this project locally, ensure you have **Docker Desktop** installed and running.
 
-# 1. Drop the database completely (to clear out any "ghost" migrations)
-```php bin/console doctrine:database:drop --forcet```
+# 1. Build and start the containers:
 
-# 2. Create a clean database from scratch
-```php bin/console doctrine:database:createt```
+bash
+```docker compose up -d --build```
 
-# 3. Create a new migration.
-php bin/console make:migration
+Install PHP dependencies:
 
-# 4. Apply this new migration
-```php bin/console doctrine:migrations:migratet```
+bash
+```docker compose exec php composer install```
 
-After this, a single file (e.g., Version2025...php) will appear in your migrations folder, and the migrate command will work without errors.
-
-2. Fixing the Test Environment (TEST)
-
-As mentioned earlier, migrations are not necessary for tests. Instead, we can use a different approach: direct schema creation. This is faster and avoids versioning errors.
-
-Run these commands for the test environment:
+Run database migrations:
 
 Bash
 
-# 1. Drop the old test database
-```php bin/console --env=test doctrine:database:drop --forcet```
+```docker compose exec php bin/console doctrine:migrations:migrate```
 
-# 2. Create a new one
-```php bin/console --env=test doctrine:database:createt```
+## 🛠 Architecture
+The project runs in an isolated Linux environment using Docker:
 
-# 3. IMPORTANT: Create tables DIRECTLY (bypassing migration files)
-```php bin/console --env=test doctrine:schema:create
+PHP: 8.2-fpm (running as www-data user)
+
+Database: MySQL 8.0
+
+Web Server: Nginx
+
+API Layer: API Platform (JSON format) !!!COMMING SOON!!!
+
+## 🌐 Local Endpoints
+Web Application: http://localhost
+
+API Documentation (Swagger): http://localhost/api !!!COMMING SOON!!!
+
+Database Manager: http://localhost:8080 (phpMyAdmin)
+
+##⚠️ Troubleshooting
+Line Endings (Git LF vs CRLF)
+This project forces LF line endings for compatibility with the Linux-based Docker environment. Git is configured to handle this automatically via .gitattributes.
+
+Permission Errors (Dubious Ownership)
+If you encounter a "dubious ownership" error when running Git commands inside the container, run:
+bash
+```docker compose exec php git config --global --add safe.directory /var/www/html```
