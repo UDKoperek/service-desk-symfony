@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * Implementuje interfejsy wymagane przez system bezpieczeństwa Symfony.
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[UniqueEntity(fields: ['username'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     /**
@@ -67,7 +68,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private ?string $password = null;
 
-    #[ORM\Column(type: Types::BOOLEAN)]
+    #[ORM\Column(type: Types::BOOLEAN, options: ["default" => false])]
     private bool $isVerified = false;
 
     public function getId(): ?int

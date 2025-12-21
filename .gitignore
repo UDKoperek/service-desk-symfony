@@ -1,7 +1,7 @@
 
 ###> symfony/framework-bundle ###
 /.migrations
-/.env.
+/.env.local
 /.env.local.php
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
@@ -9,7 +9,11 @@
 /var/
 /vendor/
 /.history/
+/compose.override.yaml/
 ###< symfony/framework-bundle ###
+
+# --- DOCKER ---
+/docker/db_data/
 
 ###> symfony/asset-mapper ###
 /public/assets/

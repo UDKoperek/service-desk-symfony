@@ -61,7 +61,6 @@ class Ticket
     private ?string $sessionToken = null;
 
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'ticket', orphanRemoval: true)]
-    
     private Collection $comments;
 
     public function __construct()
