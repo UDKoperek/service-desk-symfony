@@ -11,8 +11,11 @@ services:
   php:
     build: .
     container_name: service_desk_php
+    environment:
+      - GIT_CONFIG_PARAMETERS='safe.directory=/var/www/html'
     volumes:
       - .:/var/www/html
+      - php_var:/var/www/html/var
     depends_on:
       - database
 
@@ -36,3 +39,6 @@ services:
       PMA_HOST: database
     depends_on:
       - database
+
+volumes:
+  php_var:
