@@ -60,7 +60,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         minMessage: 'Nazwa musi mieć co najmniej {{ limit }} znaki.',
         maxMessage: 'Nazwa nie może przekroczyć {{ limit }} znaków.'
     )]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read'])]
     private ?string $username = null;
 
     /**
@@ -73,6 +73,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         message: '{{ value }} jest błędny.',
     )]
     #[Groups(['user:read', 'user:write'])]
+    #[Assert\NotBlank(message: 'Musi być email')]
     private string $email;
 
     /**
@@ -88,7 +89,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Hashed hasło użytkownika. Nigdy nie przechowujemy hasła w formie czystego tekstu!
      */
     #[ORM\Column]
-    #[Assert\NotBlank(message: 'Hasło jest wymagane.')] 
+    #[Assert\NotBlank(message: 'Hasło jest wymagane.', groups: ['registration'])] 
     #[Assert\Length(
         min: 8, 
         minMessage: 'Hasło musi mieć co najmniej {{ limit }} znaków.'
