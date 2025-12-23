@@ -3,18 +3,41 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use App\State\UserPasswordHasher;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * Encja reprezentująca użytkownika systemu.
  * Implementuje interfejsy wymagane przez system bezpieczeństwa Symfony.
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[UniqueEntity(fields: ['username'])]
+#[UniqueEntity(fields: ['username'], message: 'Ten użytkownik już istnieje.')]
+#[ApiResource(
+    operations: [
+        new GetCollection(security: "is_granted('ROLE_AGENT') or is_granted('ROLE_ADMIN')"),
+        new Get(security: "object == user or is_granted('ROLE_AGENT') or is_granted('ROLE_ADMIN')"),
+        new Patch(
+            processor: UserPasswordHasher::class,
+            security: "object == user or is_granted('ROLE_AGENT') or is_granted('ROLE_ADMIN')",
+            denormalizationContext: [
+                'groups' => "is_granted('ROLE_ADMIN') ? ['user:write', 'admin:write'] : ['user:write']"
+            ]
+        )
+    ],
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:write']]
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     /**
@@ -23,6 +46,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id = null;
 
     /**
@@ -36,6 +60,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         minMessage: 'Nazwa musi mieć co najmniej {{ limit }} znaki.',
         maxMessage: 'Nazwa nie może przekroczyć {{ limit }} znaków.'
     )]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $username = null;
 
     /**
@@ -47,6 +72,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         mode: 'strict',
         message: '{{ value }} jest błędny.',
     )]
+    #[Groups(['user:read', 'user:write'])]
     private string $email;
 
     /**
@@ -54,6 +80,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Tablica ról użytkownika (np. ROLE_ADMIN, ROLE_AGENT).
      */
     #[ORM\Column]
+    #[Groups(['user:read', 'admin:write'])]
     private array $roles = [];
 
     /**
@@ -66,6 +93,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         min: 8, 
         minMessage: 'Hasło musi mieć co najmniej {{ limit }} znaków.'
     )]
+    #[Groups(['user:write'])]
     private ?string $password = null;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ["default" => false])]
@@ -159,6 +187,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function hashPassword(): void
+    {
+    }
     /**
      * Bezpieczna serializacja: Zapewnia, że sesja nie zawiera faktycznych skrótów haseł, 
      * ale jedynie ich bezpieczny hasz (CRC32C). Jest to standard bezpieczeństwa Symfony.
