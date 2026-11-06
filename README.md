@@ -1,13 +1,13 @@
-# 🎫 Service Desk Pro
+# Service Desk Pro
 
 A modern, high-performance ticket management system built with **Symfony 7.4** and **PHP 8.2+**
 [![Symfony Tests](https://github.com/UDKoperek/service-desk-symfony/actions/workflows/tests.yaml/badge.svg)](https://github.com/UDKoperek/service-desk-symfony/actions/workflows/tests.yaml)
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
-### 🔐 Security & Access Control
+### Security & Access Control
 * **Email Verification**: Secure registration flow with link verification via `VerifyEmailBundle`.
 * **Role Hierarchy**: 
     * `ROLE_ADMIN`: Full system management (Categories/Users).
@@ -15,12 +15,12 @@ A modern, high-performance ticket management system built with **Symfony 7.4** a
     * `ROLE_USER`: Personal ticket management.
 * **Voters**: Strict authorization logic to protect tickets and comments.
 
-### 📧 Communication & Backend
+### Communication & Backend
 * **Advanced Search**: Filtering and pagination (KnpPaginator) for efficient ticket management.
 
 ---
 
-## 💻 Tech Stack
+## Tech Stack
 
 | Component | Technology |
 | :--- | :--- |
@@ -31,7 +31,7 @@ A modern, high-performance ticket management system built with **Symfony 7.4** a
 
 ---
 
-## 🔧 Installation & Setup
+## Installation & Setup
 
 ### 1. Prerequisites
 * **PHP 8.2** or higher
@@ -75,7 +75,7 @@ bash
 bash
 ```php -S 127.0.0.1:8000 -t public```
 
-🧪 Testing
+Testing
 The project uses PHPUnit for functional and unit testing.
 
 # Prepare test database
@@ -88,11 +88,11 @@ bash
 ```php bin/phpunit```
 
 
-# Service Desk Project 🎫
+# Service Desk Project
 
 A professional ticket management system built with Symfony 7, PHP 8.2, and a Dockerized architecture.
 
-## 🚀 Quick Start
+## Quick Start
 
 To run this project locally, ensure you have **Docker Desktop** installed and running.
 
@@ -112,7 +112,7 @@ Bash
 
 ```docker compose exec php bin/console doctrine:migrations:migrate```
 
-## 🛠 Architecture
+## Architecture
 The project runs in an isolated Linux environment using Docker:
 
 PHP: 8.2-fpm (running as www-data user)
@@ -123,14 +123,14 @@ Web Server: Nginx
 
 API Layer: API Platform (JSON format) !!!COMMING SOON!!!
 
-## 🌐 Local Endpoints
+## Local Endpoints
 Web Application: http://localhost
 
 API Documentation (Swagger): http://localhost/api !!!COMMING SOON!!!
 
 Database Manager: http://localhost:8080 (phpMyAdmin)
 
-##⚠️ Troubleshooting
+##Troubleshooting
 Line Endings (Git LF vs CRLF)
 This project forces LF line endings for compatibility with the Linux-based Docker environment. Git is configured to handle this automatically via .gitattributes.
 
