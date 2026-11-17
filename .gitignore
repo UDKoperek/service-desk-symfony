@@ -25,3 +25,7 @@
 /.phpunit.cache/
 ###< phpunit/phpunit ###
 .env
+
+# TestDriver & Node
+node_modules/
+.testdriver/
